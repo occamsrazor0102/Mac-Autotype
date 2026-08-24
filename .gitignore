@@ -38,8 +38,12 @@ DerivedData/
 
 # Build products
 AutoType.app/
+dist/
+*.dmg
+*.zip
+SHA256SUMS
 
 # Backup files
 *~
 *.bak
-*.swp 
+*.swp

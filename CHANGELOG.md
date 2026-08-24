@@ -1,31 +1,32 @@
 # Changelog
 
-All notable changes to AutoType will be documented in this file.
+Notable changes to AutoType are documented here. This project follows [Semantic Versioning](https://semver.org/).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [2.0.0] - 2026-08-24
+
+### Added
+
+- Native SwiftUI menu bar app, full editor, non-activating progress HUD, and settings window.
+- Explicit target-application selection and per-event safety checks.
+- Automatic pauses for focus changes, secure fields, terminated targets, and lost Accessibility permission.
+- Pause, resume, emergency stop, and configurable conflict-safe global shortcuts.
+- Unicode and layout-aware physical-key modes with visible Unicode fallback counts.
+- Configurable start delay, typing rate, tab handling, line delay, repeat count, and repeat interval.
+- Searchable, tagged, favorite presets with optional configuration overrides.
+- Validated, versioned JSON preset import/export with non-destructive conflict handling.
+- Safe placeholder templates and locale-aware date/time built-ins.
+- Optional launch at login and an in-app Accessibility permission flow.
+- Unit tests for typing state transitions, safety pauses, templates, and preset persistence.
+- Reproducible source packaging, hardened-runtime signing, notarization, DMG/ZIP generation, checksums, and CI workflows.
+
+### Security and privacy
+
+- Removed the checked-in application bundle and release archive.
+- Removed unused Apple Events, USB, and library-validation entitlements.
+- Removed obsolete source, screenshots, debug output, and binary build paths.
+- Added target identity checks, secure-field protection, atomic user-only preset storage, bounded imports, and state-only logging.
+- Kept the application free of telemetry, network code, clipboard reading, and keyboard capture.
 
 ## [1.0.0] - 2023-03-12
 
-### Added
-- Menu bar application with popover interface
-- Text input area with scrolling support and keyboard shortcuts (Cmd+A, Cmd+C, Cmd+V)
-- Adjustable typing delay (0.01 to 0.1 seconds)
-- Smart line handling for better code formatting
-- 5-second countdown before typing begins
-- Progress indicator showing typing status
-- Accessibility permissions checking and prompting
-- Comprehensive key mapping for standard characters
-- Support for special characters and modifiers
-- Reliable typing with proper delays between keystrokes
-- Automatic handling of tabs and indentation
-- Beautiful app icon and modern UI
-
-### Features
-- Simple and intuitive interface
-- Automatic indentation handling for code
-- Support for all standard keyboard shortcuts
-- Fast and reliable typing simulation
-- Status indicator showing typing progress
-- System menu bar integration
-- Accessibility permissions handling 
+- Initial menu bar auto-typing utility.
