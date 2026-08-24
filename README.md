@@ -98,6 +98,8 @@ make install
 make clean
 ```
 
+Pull-request CI also publishes an ad-hoc-signed DMG, ZIP, and `SHA256SUMS` as a downloadable workflow artifact for testing. Production GitHub Releases use the separate Developer ID signing and notarization workflow below.
+
 The project is a Swift Package with a platform-independent `AutoTypeCore` library and a native SwiftUI/AppKit application. Core tests use in-memory event, clock, and safety implementations, so they never emit real keyboard events.
 
 ## Releases

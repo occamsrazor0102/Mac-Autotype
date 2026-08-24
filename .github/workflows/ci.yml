@@ -51,3 +51,19 @@ jobs:
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")" = "io.github.occamsrazor0102.autotype"
           test "$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$app/Contents/Info.plist")" = "13.0"
           codesign --verify --deep --strict --verbose=2 "$app"
+
+      - name: Create downloadable test build
+        if: github.event_name == 'pull_request'
+        run: ./scripts/release.sh --skip-package
+
+      - name: Upload DMG, ZIP, and checksums
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: AutoType-pr-${{ github.event.number }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            dist/AutoType-*.dmg
+            dist/AutoType-*.zip
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
