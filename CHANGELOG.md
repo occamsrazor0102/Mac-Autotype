@@ -2,6 +2,12 @@
 
 Notable changes to AutoType are documented here. This project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Launching or reopening the menu-bar app now presents the editor window immediately.
+
 ## [2.0.0] - 2026-08-24
 
 ### Added
