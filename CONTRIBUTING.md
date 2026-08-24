@@ -1,69 +1,68 @@
 # Contributing to AutoType
 
-Thank you for considering contributing to AutoType! This document provides guidelines and instructions for contributing to this project.
+Thanks for helping improve AutoType. Keep changes focused, explain user-visible behavior, and treat simulated input as a safety-sensitive feature.
 
-## Code of Conduct
+## Development setup
 
-By participating in this project, you agree to maintain a respectful and inclusive environment for everyone.
+AutoType requires macOS 13 or newer and Xcode 16 or newer.
 
-## How Can I Contribute?
+```bash
+git clone https://github.com/occamsrazor0102/Mac-Autotype.git
+cd Mac-Autotype
+./scripts/test.sh
+./build.sh
+```
 
-### Reporting Bugs
+Source is organized as:
 
-If you find a bug, please create an issue with the following information:
+- `Sources/AutoTypeCore`: models, templates, preset storage, and the testable typing state machine.
+- `Sources/AutoTypeApp`: macOS event delivery, safety monitoring, hotkeys, windows, and SwiftUI views.
+- `Tests/AutoTypeCoreTests`: deterministic tests that use no real keyboard events.
+- `scripts`: packaging, testing, release, and notarization helpers.
 
-1. A clear, descriptive title
-2. Steps to reproduce the issue
-3. Expected behavior
-4. Actual behavior
-5. Screenshots (if applicable)
-6. Your macOS version
-7. Any relevant error messages
+## Pull requests
 
-### Suggesting Enhancements
+Before opening a pull request:
 
-If you have ideas for new features or improvements, please create an issue with:
+1. Run `./scripts/test.sh`.
+2. Run `swift build -c release` and `./scripts/package.sh --adhoc`.
+3. Test target selection, countdown, pause/resume, emergency stop, focus-loss pause, and secure-field pause on a Mac.
+4. Verify Unicode text, a non-US keyboard layout if relevant, newlines, and each tab mode.
+5. Update tests and documentation for changed behavior.
 
-1. A clear, descriptive title
-2. A detailed description of the proposed enhancement
-3. Any relevant mockups or examples
-4. Why this enhancement would be useful to most AutoType users
+Do not commit generated `.app`, `.dmg`, `.zip`, `dist`, or `.build` contents.
 
-### Pull Requests
+## Safety and privacy requirements
 
-1. Fork the repository
-2. Create a new branch for your feature or bugfix
-3. Make your changes
-4. Test your changes thoroughly
-5. Submit a pull request with a clear description of the changes
+Changes must preserve these invariants:
 
-## Development Setup
+- A run is bound to an explicitly resolved process and checks its identity and focus before each typing unit.
+- A secure field, focus change, missing Accessibility permission, or terminated target pauses output.
+- The emergency-stop path remains globally available during a run.
+- Draft or typed content is never logged or sent over a network.
+- Drafts are not persisted implicitly. Saved preset storage must remain explicit and clearly disclosed as plaintext.
+- Templates perform substitution only; they must never evaluate scripts, expressions, or commands.
+- Imported files are bounded and validated before modifying the local store.
+- Production entitlements stay minimal. New sensitive permissions require a concrete feature justification and documentation.
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/bunnysayzz/autotype.git
-   cd autotype
-   ```
+Never add analytics, update frameworks, remote fonts, package-install hooks, downloaded executables, obfuscated payloads, or shell-command execution without explicit maintainer review.
 
-2. Make your changes to the Swift files in the `src` directory
+## Release workflow
 
-3. Build and test:
-   ```
-   ./build.sh
-   ./run.sh
-   ```
+Tags matching `v*` run `.github/workflows/release.yml`. The version in the tag must match `CFBundleShortVersionString` in `Info.plist`. The repository must define:
 
-## Coding Guidelines
+- `DEVELOPER_ID_CERTIFICATE_BASE64`
+- `DEVELOPER_ID_CERTIFICATE_PASSWORD`
+- `DEVELOPER_ID_APPLICATION`
+- `KEYCHAIN_PASSWORD`
+- `APP_STORE_CONNECT_KEY_BASE64`
+- `APP_STORE_CONNECT_KEY_ID`
+- `APP_STORE_CONNECT_ISSUER_ID`
 
-- Follow Swift style guidelines
-- Write clear, descriptive commit messages
-- Add comments for complex logic
-- Update documentation when necessary
+The workflow signs with the hardened runtime, submits the app for notarization, staples it, creates ZIP and DMG artifacts, notarizes and staples the DMG, regenerates `SHA256SUMS`, and publishes a GitHub release.
 
-## Testing
+## Reporting issues
 
-Before submitting a pull request, please test your changes on different macOS versions if possible.
+Include the macOS version, keyboard layout, target application, input mode, relevant settings, exact reproduction steps, and observed versus expected behavior. Never attach presets containing secrets or private data.
 
-## License
-
-By contributing to AutoType, you agree that your contributions will be licensed under the project's MIT License. 
+By contributing, you agree that your changes are licensed under the project’s MIT License.

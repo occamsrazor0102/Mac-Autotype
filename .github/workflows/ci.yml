@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Verify source-only repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)(AutoType\.app|releases)(/|$)|\.(dmg|zip)$'; then
+            echo "Generated application or release archives must not be committed." >&2
+            exit 1
+          fi
+          while IFS= read -r script; do
+            bash -n "$script"
+          done < <(find . -type f -name '*.sh' -not -path './.build/*' -print)
+          plutil -lint Info.plist AutoType.entitlements
+
+      - name: Run unit tests
+        run: ./scripts/test.sh
+
+      - name: Build release executable
+        run: swift build --configuration release -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+
+      - name: Package application
+        run: ./scripts/package.sh --adhoc
+
+      - name: Verify application bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="dist/AutoType.app"
+          test -x "$app/Contents/MacOS/AutoType"
+          test -f "$app/Contents/Resources/AppIcon.icns"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")" = "io.github.occamsrazor0102.autotype"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$app/Contents/Info.plist")" = "13.0"
+          codesign --verify --deep --strict --verbose=2 "$app"

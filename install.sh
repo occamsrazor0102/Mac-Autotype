@@ -1,15 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Install script for AutoType
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source_app="$script_dir/dist/AutoType.app"
+destination="/Applications/AutoType.app"
 
-# Check if build exists
-if [ ! -d "AutoType.app" ]; then
-    echo "AutoType app not found. Running build script first..."
-    ./build.sh
+"$script_dir/scripts/package.sh" --adhoc
+
+if [[ -e "$destination" ]]; then
+    rm -rf -- "$destination"
 fi
+ditto "$source_app" "$destination"
 
-# Copy to Applications folder
-cp -r AutoType.app /Applications/
-
-echo "AutoType has been installed to /Applications/AutoType.app"
-echo "Note: You may need to grant accessibility permissions in System Preferences > Security & Privacy > Privacy > Accessibility" 
+echo "Installed AutoType at $destination"
+echo "On first use, grant Accessibility access when macOS asks."

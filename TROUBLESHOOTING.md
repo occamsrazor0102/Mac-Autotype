@@ -1,102 +1,73 @@
-# AutoType Troubleshooting Guide
+# Troubleshooting AutoType
 
-If you're experiencing issues with AutoType, this guide will help you resolve common problems.
+## AutoType does not type
 
-## AutoType Not Typing Text
+1. Open **System Settings → Privacy & Security → Accessibility** and enable AutoType.
+2. Quit and reopen AutoType after changing the permission.
+3. In the editor, select the intended running application under **Target**.
+4. Return focus to that application before the countdown ends.
+5. Confirm the status HUD is not paused for focus, a secure field, or a closed target.
 
-### 1. Check Accessibility Permissions
+AutoType intentionally refuses to continue when its safety checks cannot confirm the selected destination. Return to the correct target and use the pause/resume shortcut.
 
-The most common reason for AutoType not working is missing accessibility permissions:
+## Characters are missing or incorrect
 
-1. Open **System Preferences** > **Security & Privacy** > **Privacy** > **Accessibility**
-2. Make sure AutoType is in the list and has a checkmark next to it
-3. If it's not in the list, click the "+" button and add AutoType.app
-4. If it's already in the list but not checked, check the box
-5. You may need to unlock the preferences by clicking the lock icon in the bottom left
+- Reduce the speed or add a line delay for slow web forms, remote desktops, or terminal sessions.
+- Use **Unicode** mode for emoji, composed characters, and broad language support.
+- Use **Physical keys** when the destination reacts to key positions rather than inserted Unicode. Unsupported layout characters fall back to Unicode and are reported at completion.
+- Verify the active macOS keyboard layout is the one expected by the destination.
+- For indentation, choose spaces instead of a physical Tab when the target uses Tab for focus navigation.
 
-### 2. Restart the Application
+## AutoType pauses immediately
 
-Sometimes a simple restart can fix issues:
+- **Return to application** means a different process is frontmost. The selected process must remain frontmost.
+- **Secure field detected** means the focused field is protected; AutoType will not type into it.
+- **Target app closed** means the selected process ended or its identity no longer matches.
+- **Accessibility permission required** means macOS revoked or has not granted permission.
 
-1. Quit AutoType (right-click the keyboard icon in the menu bar and select "Quit")
-2. Reopen AutoType from the Applications folder or using Spotlight
+Choosing a different target during a run is disabled. Stop the run, select the new target, and start again.
 
-### 3. Rebuild the Application
+## A global shortcut does not save
 
-If you're running from source:
+Every shortcut needs at least one modifier and each AutoType action needs a unique combination. macOS and other apps may reserve combinations. When registration fails, AutoType keeps the previously working shortcuts.
 
+## Presets cannot be imported
+
+Imports must be valid UTF-8 JSON using schema version 1, no larger than 10 MB, with each preset’s text no larger than 1 MB. AutoType previews validated presets before import. An ID conflict creates a renamed copy rather than replacing existing data.
+
+Saved presets are located at:
+
+```text
+~/Library/Application Support/io.github.occamsrazor0102.autotype/presets.json
 ```
+
+If that file is damaged, preserve it when reporting a bug. It may contain private text, so redact it before sharing.
+
+## Launch at login fails
+
+Launch at login requires AutoType to run as an installed application bundle. Move the app to Applications, reopen it, and try again. Source executables launched directly by Swift Package Manager are not suitable for login registration.
+
+## Build problems
+
+Use Xcode 16 or newer and select it as the active developer directory:
+
+```bash
+xcode-select -p
+swift --version
+./scripts/test.sh
+./scripts/package.sh --adhoc
+```
+
+The packaged application is written to `dist/AutoType.app`. `build.sh` always rebuilds it from the current source.
+
+For a clean rebuild:
+
+```bash
+make clean
+./scripts/test.sh
 ./build.sh
-./run.sh
 ```
 
-### 4. Adjust Typing Delay
+## Reporting a problem
 
-If typing is inconsistent or characters are missing:
-
-1. Try increasing the typing delay (move the slider to the right)
-2. A delay of 0.01-0.02 seconds often works well for most systems
-3. For very complex text or slower systems, try 0.05-0.1 seconds
-
-### 5. Check for Special Characters
-
-Some special characters may not be properly mapped. Try using simpler text with standard ASCII characters.
-
-### 6. Typing Code
-
-When typing code:
-
-1. The app will automatically remove tabs and type the code with proper line breaks
-2. Most code editors will automatically format the code as you type
-
-### 7. Ensure Proper Focus
-
-Make sure you:
-1. Click "Start Typing"
-2. Switch to your target application within the 5-second countdown
-3. Place the cursor where you want the text to be typed
-
-## Application Won't Launch
-
-### 1. Check for Existing Instances
-
-Make sure there isn't already an instance of AutoType running.
-
-### 2. Check macOS Version
-
-AutoType requires macOS 10.13 or later.
-
-### 3. Rebuild from Source
-
-If you're running from source, try a clean rebuild:
-
-```
-rm -rf AutoType.app
-./build.sh
-./run.sh
-```
-
-### 4. Check Console for Errors
-
-1. Open the Console app (Applications > Utilities > Console)
-2. Search for "AutoType" to see any error messages
-
-## Contact Support
-
-If you're still experiencing issues, please:
-
-1. Create an issue on the GitHub repository with:
-   - A detailed description of the problem
-   - Steps to reproduce the issue
-   - Your macOS version
-   - Any error messages you're seeing
-
-## Advanced Troubleshooting
-
-For developers, you can run the app from the terminal with debugging output:
-
-```
-./AutoType.app/Contents/MacOS/AutoType
-```
-
-This will show any error messages or warnings that might help identify the issue. 
+[Open an issue](https://github.com/occamsrazor0102/Mac-Autotype/issues) with the macOS version, keyboard layout, target application, input mode, settings, steps to reproduce, and the exact status or error. Do not include secret preset or draft contents.

@@ -1,38 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
     <key>CFBundleExecutable</key>
     <string>AutoType</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.example.AutoType</string>
-    <key>CFBundleName</key>
-    <string>AutoType</string>
     <key>CFBundleIconFile</key>
-    <string>icon</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
-    <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>AppIcon</string>
+    <key>CFBundleIdentifier</key>
+    <string>io.github.occamsrazor0102.autotype</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>AutoType</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
-    <key>CFBundleSignature</key>
-    <string>????</string>
-    <key>NSPrincipalClass</key>
-    <string>NSApplication</string>
-    <key>NSHumanReadableCopyright</key>
-    <string>Copyright © 2023 Md Azharuddin. All rights reserved.</string>
+    <key>CFBundleShortVersionString</key>
+    <string>2.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utilities</string>
     <key>LSMinimumSystemVersion</key>
-    <string>10.13</string>
-    <key>NSHighResolutionCapable</key>
-    <true/>
+    <string>13.0</string>
     <key>LSUIElement</key>
     <true/>
-    <key>NSAppleEventsUsageDescription</key>
-    <string>AutoType needs to control other applications to simulate keyboard input.</string>
     <key>NSAccessibilityUsageDescription</key>
-    <string>AutoType needs accessibility permissions to simulate keyboard input.</string>
+    <string>AutoType uses Accessibility access only to type text you explicitly start into the application you select.</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © AutoType contributors.</string>
 </dict>
-</plist> 
+</plist>

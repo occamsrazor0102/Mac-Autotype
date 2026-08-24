@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate tag and test
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
+          test "$GITHUB_REF_NAME" = "v$version"
+          ./scripts/test.sh
+
+      - name: Import Developer ID certificate
+        shell: bash
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          certificate="$RUNNER_TEMP/developer-id.p12"
+          keychain="$RUNNER_TEMP/autotype.keychain-db"
+          printf '%s' "$CERTIFICATE_BASE64" | base64 -D > "$certificate"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$keychain"
+          security import "$certificate" -k "$keychain" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$keychain"
+          security list-keychains -d user -s "$keychain"
+          rm -f -- "$certificate"
+
+      - name: Prepare App Store Connect key
+        shell: bash
+        env:
+          CONNECT_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
+          CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          set -euo pipefail
+          key_path="$RUNNER_TEMP/AuthKey_$CONNECT_KEY_ID.p8"
+          printf '%s' "$CONNECT_KEY_BASE64" | base64 -D > "$key_path"
+          chmod 600 "$key_path"
+          echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+
+      - name: Sign and package application
+        env:
+          SIGN_IDENTITY: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+        run: ./scripts/package.sh --identity "$SIGN_IDENTITY"
+
+      - name: Notarize and staple application
+        shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          submission="$RUNNER_TEMP/AutoType-notarization.zip"
+          ditto -c -k --sequesterRsrc --keepParent dist/AutoType.app "$submission"
+          ./scripts/notarize.sh "$submission" dist/AutoType.app
+          rm -f -- "$submission"
+
+      - name: Create release artifacts
+        run: ./scripts/release.sh --skip-package
+
+      - name: Notarize DMG and refresh checksums
+        shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
+          ./scripts/notarize.sh "dist/AutoType-$version.dmg"
+          (
+            cd dist
+            shasum -a 256 "AutoType-$version.zip" "AutoType-$version.dmg" > SHA256SUMS
+          )
+          codesign --verify --deep --strict --verbose=2 dist/AutoType.app
+          spctl --assess --type execute --verbose=2 dist/AutoType.app
+          spctl --assess --type open --context context:primary-signature --verbose=2 "dist/AutoType-$version.dmg"
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/AutoType-$version.zip" \
+            "dist/AutoType-$version.dmg" \
+            dist/SHA256SUMS \
+            --title "AutoType $version" \
+            --generate-notes

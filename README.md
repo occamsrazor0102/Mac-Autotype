@@ -1,112 +1,117 @@
 # AutoType
 
-<p align="center">
-  <img src="resources/icon.png" width="128" height="128" alt="AutoType Icon">
-</p>
+AutoType is a privacy-focused macOS menu bar utility for reliably typing prepared text into a specific application. It is useful for repetitive form entry, demos, snippets, test data, and any workflow where paste is unavailable or undesirable.
 
-A simple macOS utility that helps you type text automatically into any application. Perfect for repetitive typing tasks, code snippets, and frequently used text!
+## Highlights
 
-## Features
+- Select a running target application before a run starts.
+- Type from 1 to 100 characters per second, with a configurable countdown and per-line delay.
+- Pause, resume, or emergency-stop from configurable global shortcuts.
+- Automatically pause if focus leaves the selected app, the target closes, Accessibility access is lost, or a secure text field is focused.
+- Choose Unicode entry for broad language and emoji support, or layout-aware physical key events with automatic Unicode fallback.
+- Handle tabs as spaces, a real Tab key, or skipped input.
+- Repeat a run up to 100 times with a configurable interval.
+- Track progress in a non-activating heads-up display, so the target keeps focus.
+- Save searchable, tagged, favorite presets with optional per-preset typing settings.
+- Import and export versioned JSON presets with validation and a conflict preview.
+- Use safe text templates such as `Hello {{name}}` and built-ins including `{{date}}`, `{{time}}`, and `{{datetime}}`.
+- Optionally launch at login.
 
-- 🚀 Automatic text typing with customizable speed
-- ⏱️ Adjustable typing delay (0.01 to 0.1 seconds)
-- ⌛ 5-second countdown to switch applications
-- 📊 Real-time typing progress indicator
-- 🔄 Menu bar integration for quick access
-- ⌨️ Smart handling of special characters and modifiers
-- 📝 Support for multi-line text and code formatting
-- 🎯 Precise timing control for reliable typing
+## Install
 
-## Installation
+AutoType requires macOS 13 or newer. Release builds are universal for Apple silicon and Intel Macs.
 
-1. Download `AutoType-1.0.0.dmg` from the [latest release](https://github.com/bunnysayzz/autotype/releases/latest)
-2. Open the downloaded DMG file
-3. Drag AutoType to your Applications folder
-4. Open AutoType from Applications
+1. Download the DMG from [GitHub Releases](https://github.com/occamsrazor0102/Mac-Autotype/releases).
+2. Drag AutoType into Applications.
+3. Open AutoType and grant Accessibility access when prompted.
 
-<p align="center">
-  <img src="resources/dmg.png" width="600" alt="DMG Installation Screen">
-</p>
+Accessibility is the only sensitive permission AutoType needs. It does not require Apple Events, Input Monitoring, Screen Recording, or network access.
 
-## First Time Setup
+## Use
 
-When you first open AutoType, you'll need to handle two security prompts:
+1. Open the keyboard icon in the menu bar and choose **Open Editor**.
+2. Enter text or select a preset.
+3. Choose the destination under **Target**. “Last active application” is convenient when you came from the intended destination.
+4. Adjust speed, start delay, tabs, line delay, and repeats.
+5. Select **Start Typing**, then return focus to the target before the countdown ends.
 
-### 1. Security Warning
+The floating status panel does not take keyboard focus. If focus changes during a run, AutoType pauses before sending the next unit. Return to the chosen application and use Pause/Resume to continue.
 
-If you see "AutoType can't be opened because it is from an unidentified developer":
+Default global shortcuts are:
 
-1. Right-click (or Control-click) on AutoType in Applications
-2. Select "Open" from the context menu
-3. Click "Open" in the security dialog
-4. If needed, go to System Settings > Privacy & Security and click "Open Anyway"
+| Action | Shortcut |
+| --- | --- |
+| Show AutoType | Control–Option–A |
+| Start typing | Control–Option–Return |
+| Pause or resume | Control–Option–Space |
+| Emergency stop | Control–Option–Escape |
 
-<p align="center">
-  <img src="resources/security.png" width="500" alt="Security Warning Dialog">
-</p>
+Shortcuts can be changed in Settings. Conflicts are rejected without discarding the previously working shortcut set.
 
-After clicking "Open Anyway", you'll see this confirmation:
+## Templates
 
-<p align="center">
-  <img src="resources/privacyopenanyway.png" width="400" alt="Open Anyway Confirmation">
-</p>
+Placeholders contain only an identifier; they never execute code or shell commands.
 
-### 2. Accessibility Permission
+```text
+Hello {{name}},
 
-The app needs accessibility permission to simulate keyboard input:
+Your appointment is confirmed on {{date}} at {{time}}.
+```
 
-1. When prompted, click "Open System Settings"
-2. Navigate to Privacy & Security > Accessibility
-3. Find AutoType in the list
-4. Toggle the switch to allow AutoType
+AutoType asks once for each custom placeholder before a run. Built-in date values use the Mac’s current locale and time zone. To type literal opening braces, use `\{{`.
 
-<p align="center">
-  <img src="resources/accessibility.png" width="500" alt="Accessibility Permission Dialog">
-</p>
+## Presets and privacy
 
-## How to Use
+Draft text remains in memory unless **Save As** or **Update** is selected. Saved presets are plaintext JSON at:
 
-1. Click the AutoType icon in your menu bar
-2. Paste or type your text in the input area
-3. Adjust the typing speed using the slider (0.01-0.1 seconds)
-4. Click "Start Typing"
-5. Switch to your target application within 5 seconds
-6. Watch as AutoType types your text automatically!
+```text
+~/Library/Application Support/io.github.occamsrazor0102.autotype/presets.json
+```
 
-<p align="center">
-  <img src="resources/app.png" width="400" alt="AutoType Main Interface">
-</p>
+The file is written atomically with user-only permissions. Imports are limited to 10 MB, individual preset text is limited to 1 MB, schema versions are checked, and conflicts are duplicated instead of overwriting local data. Because saved presets are plaintext, do not store passwords, recovery codes, API keys, or other secrets in them.
 
-## Tips & Tricks
+AutoType has:
 
-- Use a slower typing speed (0.05-0.1s) for more reliable typing in slower applications
-- For code snippets, AutoType automatically handles indentation
-- The 5-second countdown gives you time to switch to your target application
-- You can stop typing at any time by quitting the app from the menu bar
-- Use Command+V to paste text quickly into the input area
+- no telemetry, analytics, update checker, or network client;
+- no clipboard reader or keyboard-capture event tap;
+- no content logging—diagnostics record only state names such as “typing” or “paused”;
+- no third-party runtime dependencies.
 
-## Requirements
+## Build from source
 
-- macOS 10.13 or later
-- 64-bit Intel or Apple Silicon Mac
-- Accessibility permissions enabled
+Building requires Xcode 16 or newer with the macOS SDK.
 
-## Troubleshooting
+```bash
+git clone https://github.com/occamsrazor0102/Mac-Autotype.git
+cd Mac-Autotype
+./scripts/test.sh
+./build.sh
+open dist/AutoType.app
+```
 
-If you encounter any issues, please check our [Troubleshooting Guide](TROUBLESHOOTING.md) for common solutions.
+`build.sh` always rebuilds from the checked-out Swift source, assembles `dist/AutoType.app`, and applies an ad-hoc signature. It never runs a checked-in executable. Other useful commands are:
 
-## Contributing
+```bash
+make test
+make run
+make install
+make clean
+```
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+The project is a Swift Package with a platform-independent `AutoTypeCore` library and a native SwiftUI/AppKit application. Core tests use in-memory event, clock, and safety implementations, so they never emit real keyboard events.
 
-## License
+## Releases
 
-AutoType is released under the MIT License. See [LICENSE](LICENSE) for details.
+Local release artifacts can be created with:
 
-## Support
+```bash
+./scripts/release.sh --adhoc
+```
 
-Need help? Have suggestions? [Open an issue](https://github.com/bunnysayzz/autotype/issues) on GitHub.
+Maintainers can pass `--identity "Developer ID Application: …"` to create a hardened-runtime build. The tag workflow imports the signing certificate, notarizes and staples the app and DMG, generates SHA-256 checksums, and publishes the artifacts. See [CONTRIBUTING.md](CONTRIBUTING.md) for the required secrets and verification steps.
 
-## Changelog
+## Troubleshooting and contributing
 
-See [CHANGELOG.md](CHANGELOG.md) for release history and updates. 
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for permissions, focus, shortcuts, and typing reliability help. Contributions are described in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+AutoType is available under the [MIT License](LICENSE).
